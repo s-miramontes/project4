@@ -4,7 +4,7 @@ Needleman Wunsch Algorithm
 
 # Assignment Overview
 The purpose of this assigment is to have you implement the Needleman-Wunsch global pairwise sequence alignment algorithm (dynamic programming).
-See this [video](https://www.youtube.com/watch?v=NqYY0PJbD3s) for a walk through of the algorithm implementation
+See this [video](https://www.youtube.com/watch?v=NqYY0PJbD3s) for a walk through of the algorithm implementation. NOTE: This video misses an important step. In the video the X and Y gap matrices assume only two possible transitions when in reality there are three. The missing possibility is the chance that immediately go from a gap in one sequence to a gap in a second sequence. Please follow Lee's Lecture in terms of this appraoch. Please ask the TAs if you have any questions.
 
 # Assignment Tasks
 ## Coding Assessment
@@ -23,11 +23,11 @@ See this [video](https://www.youtube.com/watch?v=NqYY0PJbD3s) for a walk through
 * [TODO] Complete the `test_nw_backtrace` function in test/test_align.py to test for proper backtracing in your `NeedlemanWunsch._backtrace` method.
 
 Note: To check that you have correclty implemented your algorithm the following information is provided
-* test_seq3.fa and test_seq4.fa should have an alignment score of **18** and an alignment of:
+* test_seq3.fa and test_seq4.fa should have an alignment score of **17** and an alignment of:
 
 	MAVHQLIRRP
 	
-	---MQLIRHP
+	M---QLIRHP
 
 ### Automate Testing with [Github Actions](https://docs.github.com/en/actions)
   See blogposts below on helping set up Github actions with pytest:
