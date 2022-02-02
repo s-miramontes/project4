@@ -140,7 +140,7 @@ class NeedlemanWunsch:
 
         # starts at 1, we've filled base case
         # fill all rows in first col now
-        for row in range(1, self._gapA_matrix[0]):
+        for row in range(1, self._gapA_matrix.shape[0]):
             self._gapA_matrix[row, 0] = self.gap_open + self.gap_extend * row
 
 
@@ -149,7 +149,7 @@ class NeedlemanWunsch:
         self._gapB_matrix[0,0] = self.gap_open
 
         # fill first row, all cols now
-        for col in range(1, self._gapB_matrix[1]):
+        for col in range(1, self._gapB_matrix.shape[1]):
             self._gapB_matrix[0, col] = self.gap_open + self.gap_extend * row
         #---------------------------------------------------------------------------------Done.
 
@@ -160,7 +160,7 @@ class NeedlemanWunsch:
             for j in range(1, len(seqB) + 1):
 
                 # Calculate max M[atch] score
-                dict_ match = self.sub_dict[(self._seqA[i-1]),
+                dict_match = self.sub_dict[(self._seqA[i-1]),
                                             (self._seqB[j-1])]
                 match_max = [self._align_matrix[i-1, j-1] + dict_match,
                                 self._gapA_matrix[i-1, j-1] + dict_match,
@@ -169,7 +169,7 @@ class NeedlemanWunsch:
                 # asign M[i,j] to max match value
                 self._align_matrix[i,j] = max(match_max)
                 # save index of max value for backtracing 
-                self._back[i,j] = np.argmax(matc_max)
+                self._back[i,j] = np.argmax(match_max)
 
 
                 # Calculate max gap in A gap score
@@ -178,20 +178,20 @@ class NeedlemanWunsch:
                                self.gap_open + self.gap_extend + self._gapB_matrix[i, j-1]]
 
                 # assign A[i,j] to max gap_in_A value
-                self._gapA_matrix[i,j] = max(gapX_max)
+                self._gapA_matrix[i,j] = max(gapA_max)
                 # save index of max value for backtracing
-                self._back_A[i,j] = np.argmax(gapX_max)
+                self._back_A[i,j] = np.argmax(gapA_max)
 
 
                 # Calculate max gap in B gap score
-                gapY_max = [self.gap_open + self.gap_extend + self._align_matrix[i-1, j],
+                gapB_max = [self.gap_open + self.gap_extend + self._align_matrix[i-1, j],
                                self.gap_open + self.gap_extend + self._gapA_matrix[i-1, j],
                                self.gap_extend + self._gapB_matrix[i-1, j]]
 
                 # assign B[i,j] to max gap_in_B value
-                self._gapB_matrix[i,j] = max(gapY_max)
+                self._gapB_matrix[i,j] = max(gapB_max)
                 # save index of max value for backtracing
-                self._back_B[i,j] = np.argmax(gapY_max)
+                self._back_B[i,j] = np.argmax(gapB_max)
         #
         #        
         # final note:
@@ -244,17 +244,17 @@ class NeedlemanWunsch:
         while lastRow !=0 and lastCol !=0:
 
             # match was max score
-            if idx_best == 0:
+            if max_idx == 0:
                 self.seqA_align = self._seqA[lastRow - 1] + self.seqA_align
                 self.seqB_align = self._seqB[lastCol - 1] + self.seqB_align
                 # new best idx
-                max_idx = self._back[i, j]
+                max_idx = self._back[lastRow, lastCol]
                 # move diagonally (up to the left)
                 lastRow -= 1
                 lastCol -= 1
 
             # gapA was max score
-            elif idx_best == 1:
+            elif max_idx == 1:
                 self.seqA_align = "-" + self.seqA_align
                 self.seqB_align = self._seqB[lastCol - 1] + self.seqB_align
                 # new best idx
