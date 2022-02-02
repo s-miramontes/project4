@@ -14,6 +14,13 @@ def test_nw_alignment():
     """
     seq1, _ = read_fasta("./data/test_seq1.fa")
     seq2, _ = read_fasta("./data/test_seq2.fa")
+
+    # penalties
+    gap_open = -10
+    gap_extend = -1
+
+    # generating all matrices
+    
     pass
 
 def test_nw_backtrace():
