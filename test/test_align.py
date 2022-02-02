@@ -70,12 +70,20 @@ def test_nw_backtrace():
     do_nw = NeedlemanWunsch("substitution_matrices/BLOSUM62.mat",
                          gap_open, gap_extend)
     # get the best scores
-    al_score, seqA_align, seqB_align = do_nw.align(seq3, seq4)
+    al_score, seq3_align, seq4_align = do_nw.align(seq3, seq4)
+
+    print(" ")
+    print("alignment score: ", al_score)
+    print(" ")
+    print("sequence 3: ", seq3_align)
+    print(" ")
+    print("sequence 4: ", seq4_align)
+
 
     # assert the results are correct
     assert al_score == 17, "Alignment Score is incorrect :("
-    assert seqA_align == 'MAVHWLIRRP', "Sequence 3 alignment is incorrect :("
-    assert seqB_align == 'M---QLIRHP', "Sequence 4 alignment is incorrect :("
+    assert seq3_align == 'MAVHQLIRRP', "Sequence 3 alignment is incorrect :("
+    assert seq4_align == 'M---QLIRHP', "Sequence 4 alignment is incorrect :("
 
 
 

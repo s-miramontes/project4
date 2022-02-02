@@ -227,21 +227,32 @@ class NeedlemanWunsch:
 
 
         # get best score (list score order, same as above)
-        final_scores= [self._align_matrix[lastRow, lastCol],
-                self._gapA_matrix[lastRow, lastCol], 
-                self._gapB_matrix[lastRow, lastCol]]
+        final_scores= [self._align_matrix[-1, -1],
+                self._gapA_matrix[-1, -1], 
+                self._gapB_matrix[-1, -1]]
 
         self.alignment_score = max(final_scores)
 
         # idx of best score (match, gap in A, or gap in B)
         max_idx = np.argmax(final_scores)
 
-        while lastRow !=0 and lastCol !=0:
+        print("Sequence aligned A start: ", self.seqA_align)
+        print(" ")
+        print("Sequence aligned B start: ", self.seqB_align)
+        print(" ")
+
+        print("Sequence A input: ", self._seqA)
+        print(" ")
+        print("Seqiemce B input: ", self._seqB)
+
+        while lastRow>0 and lastCol>0:
 
             # match was max score
             if max_idx == 0:
                 self.seqA_align = self._seqA[lastRow - 1] + self.seqA_align
+                print(self.seqA_align)
                 self.seqB_align = self._seqB[lastCol - 1] + self.seqB_align
+                print(self.seqB_align)
                 # new best idx
                 max_idx = self._back[lastRow, lastCol]
                 # move diagonally (up to the left)
@@ -251,20 +262,24 @@ class NeedlemanWunsch:
             # gapA was max score
             elif max_idx == 1:
                 self.seqA_align = "-" + self.seqA_align
+                print(self.seqA_align)
                 self.seqB_align = self._seqB[lastCol - 1] + self.seqB_align
+                print(self.seqB_align)
                 # new best idx
                 max_idx = self._back_A[lastRow, lastCol]
                 # move up
-                lastRow -= 1
+                lastCol -= 1
 
             # gapB was max score
             else:
                 self.seqA_align = self._seqA[lastRow - 1] + self.seqA_align
+                print(self.seqA_align)
                 self.seqB_align = "-" + self.seqB_align
+                print(self.seqB_align)
                 # new best idx
                 max_idx = self._back_B[lastRow, lastCol]
                 # move left
-                lastCol -= 1
+                lastRow -= 1
 
         # return tuple of alignment score, seqA aligned, seqB aligned
         return self.alignment_score, self.seqA_align, self.seqB_align
