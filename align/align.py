@@ -100,13 +100,28 @@ class NeedlemanWunsch:
 
     def align(self, seqA: str, seqB: str) -> Tuple[float, str, str]:
         """
-        # TODO: Fill in the Needleman-Wunsch Algorithm below
-        to perform global sequence alignment of seqA and seqB
-        and return a tuple with the following format
-        (alignment score, seqA alignment, seqB alignment)
-        Also, write up a docstring for this function using the
-        _read_sub_matrix as an example.
-        Don't forget to comment your code!
+        Performs Needleman-Wunsch Algorithm to align seqA, and seqB.
+        Initialization of matrix with base cases occurs first.
+        Filling in the rest of the matrices (M, A, B) based on the
+        substrcture problem results.
+        Once maximum value is obtained at each case, we fill
+        backtracing matrices, while keeping track of the instance
+        in which the maximum value was obtained.
+        In other words, whether it was due a match (idx=0),
+        a gap in matrix A (idx=1), or a gap in matrix B (idx=2)
+
+        Inputs
+        -----------
+            self.seqA: str to align
+            self.seqB: str to align
+
+        Outputs
+        ----------
+            [from _backtrace()]
+            self.alignment_score: best alignment score (bottom right)
+            self._seqA_aligned: best aligned seqA
+            self._seqB_aligned: best aligned seqB
+       
         """
         # Initialize 6 matrix private attributes for use in alignment
         # create matrices for alignment scores and gaps
@@ -130,16 +145,15 @@ class NeedlemanWunsch:
         self._seqA = seqA 
         self._seqB = seqB 
 
+
         # ---------------------------------- INITIALIZE FILLING -------------------------------
         # 1. Base case matrix M(atching)
         self._align_matrix[0,0] = 0 
-
 
         # 2. Base case matrix A(gap_open)
         # fill all rows in first col now
         for row in range(len(seqA) + 1):
             self._gapB_matrix[row, 0] = self.gap_open + self.gap_extend * row
-
 
         # 3. Base case matrix B(gap_extend)
         # fill first row, all cols now
@@ -160,7 +174,7 @@ class NeedlemanWunsch:
                 match_max = [self._align_matrix[i-1, j-1] + dict_match,
                                 self._gapA_matrix[i-1, j-1] + dict_match,
                                 self._gapB_matrix[i-1, j-1] + dict_match]
-                
+
                 # asign M[i,j] to max match value
                 self._align_matrix[i,j] = max(match_max)
                 # save index of max value for backtracing 
@@ -225,7 +239,6 @@ class NeedlemanWunsch:
         lastRow = len(self._seqA)
         lastCol = len(self._seqB)
 
-
         # get best score (list score order, same as above)
         final_scores= [self._align_matrix[-1, -1],
                 self._gapA_matrix[-1, -1], 
@@ -236,52 +249,49 @@ class NeedlemanWunsch:
         # idx of best score (match, gap in A, or gap in B)
         max_idx = np.argmax(final_scores)
 
-        print("Sequence aligned A start: ", self.seqA_align)
-        print(" ")
-        print("Sequence aligned B start: ", self.seqB_align)
-        print(" ")
-
-        print("Sequence A input: ", self._seqA)
-        print(" ")
-        print("Seqiemce B input: ", self._seqB)
 
         while lastRow>0 and lastCol>0:
 
             # match was max score
             if max_idx == 0:
+                # fill aligned sequences appropriately (with matching letters)
                 self.seqA_align = self._seqA[lastRow - 1] + self.seqA_align
-                print(self.seqA_align)
                 self.seqB_align = self._seqB[lastCol - 1] + self.seqB_align
-                print(self.seqB_align)
+
                 # new best idx
                 max_idx = self._back[lastRow, lastCol]
+
                 # move diagonally (up to the left)
                 lastRow -= 1
                 lastCol -= 1
 
+
             # gapA was max score
             elif max_idx == 1:
+                # fill aligned sequences appropriately (with gap in A)
                 self.seqA_align = "-" + self.seqA_align
-                print(self.seqA_align)
                 self.seqB_align = self._seqB[lastCol - 1] + self.seqB_align
-                print(self.seqB_align)
+
                 # new best idx
                 max_idx = self._back_A[lastRow, lastCol]
-                # move up
+
+                # move left
                 lastCol -= 1
+
 
             # gapB was max score
             else:
+                # fill aligned sequences appropriately (with gap in B)
                 self.seqA_align = self._seqA[lastRow - 1] + self.seqA_align
-                print(self.seqA_align)
                 self.seqB_align = "-" + self.seqB_align
-                print(self.seqB_align)
+
                 # new best idx
                 max_idx = self._back_B[lastRow, lastCol]
-                # move left
+
+                # move up
                 lastRow -= 1
 
-        # return tuple of alignment score, seqA aligned, seqB aligned
+        # (finally) return tuple of alignment score, seqA aligned, seqB aligned
         return self.alignment_score, self.seqA_align, self.seqB_align
 
 

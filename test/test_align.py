@@ -72,13 +72,6 @@ def test_nw_backtrace():
     # get the best scores
     al_score, seq3_align, seq4_align = do_nw.align(seq3, seq4)
 
-    print(" ")
-    print("alignment score: ", al_score)
-    print(" ")
-    print("sequence 3: ", seq3_align)
-    print(" ")
-    print("sequence 4: ", seq4_align)
-
 
     # assert the results are correct
     assert al_score == 17, "Alignment Score is incorrect :("
