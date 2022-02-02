@@ -28,14 +28,14 @@ class NeedlemanWunsch:
     """
     def __init__(self, sub_matrix_file: str, gap_open: float, gap_extend: float):
         # Init alignment and gap matrices
-        self._align_matrix = None
-        self._gapA_matrix = None
-        self._gapB_matrix = None
+        self._align_matrix = None 
+        self._gapA_matrix = None 
+        self._gapB_matrix = None 
 
         # Init matrices for backtrace procedure
-        self._back = None
-        self._back_A = None
-        self._back_B = None
+        self._back = None 
+        self._back_A = None 
+        self._back_B = None 
 
         # Init alignment_score
         self.alignment_score = 0
@@ -119,7 +119,7 @@ class NeedlemanWunsch:
         self._back_A = np.ones((len(seqA) + 1, len(seqB) + 1)) * -np.inf
         self._back_B = np.ones((len(seqA) + 1, len(seqB) + 1)) * -np.inf
 
-        # Resetting alignment in case method is called more than once
+        # Resetting alignment in case method is called more than once (buffer)
         self.seqA_align = ""
         self.seqB_align = ""
 
@@ -127,23 +127,152 @@ class NeedlemanWunsch:
         self.alignment_score = 0
 
         # Initializing sequences for use in backtrace method
-        self._seqA = seqA
-        self._seqB = seqB
+        self._seqA = seqA 
+        self._seqB = seqB 
 
-        # TODO Implement the global sequence alignment here
-        pass
+        # ---------------------------------- INITIALIZE FILLING -------------------------------
+        # 1. Base case matrix M(atching)
+        self._align_matrix[0,0] = 0 
+
+
+        # 2. Base case matrix X(gap_open)
+        self._gapA_matrix[0,0] = self.gap_open
+
+        # starts at 1, we've filled base case
+        # fill all rows in first col now
+        for row in range(1, self._gapA_matrix[0]):
+            self._gapA_matrix[row, 0] = self.gap_open + self.gap_extend * row
+
+
+        # 3. Base case matrix Y(gap_extend)
+        # follows same base case at [0,0]
+        self._gapB_matrix[0,0] = self.gap_open
+
+        # fill first row, all cols now
+        for col in range(1, self._gapB_matrix[1]):
+            self._gapB_matrix[0, col] = self.gap_open + self.gap_extend * row
+        #---------------------------------------------------------------------------------Done.
+
+        # -------------------------------- FILL A,B,M WITH DP --------------------------------
+        # traveling down and to the left, again skipping base cases [0,0] 
+        for i in range(1, len(seqA) + 1):
+
+            for j in range(1, len(seqB) + 1):
+
+                # Calculate max M[atch] score
+                dict_ match = self.sub_dict[(self._seqA[i-1]),
+                                            (self._seqB[j-1])]
+                match_max = [self._align_matrix[i-1, j-1] + dict_match,
+                                self._gapA_matrix[i-1, j-1] + dict_match,
+                                self._gapB_matrix[i-1, j-1] + dict_match]
+                
+                # asign M[i,j] to max match value
+                self._align_matrix[i,j] = max(match_max)
+                # save index of max value for backtracing 
+                self._back[i,j] = np.argmax(matc_max)
+
+
+                # Calculate max gap in A gap score
+                gapA_max = [self.gap_open + self.gap_extend + self._align_matrix[i,j-1],
+                               self.gap_extend + self._gapA_matrix[i, j-1],
+                               self.gap_open + self.gap_extend + self._gapB_matrix[i, j-1]]
+
+                # assign A[i,j] to max gap_in_A value
+                self._gapA_matrix[i,j] = max(gapX_max)
+                # save index of max value for backtracing
+                self._back_A[i,j] = np.argmax(gapX_max)
+
+
+                # Calculate max gap in B gap score
+                gapY_max = [self.gap_open + self.gap_extend + self._align_matrix[i-1, j],
+                               self.gap_open + self.gap_extend + self._gapA_matrix[i-1, j],
+                               self.gap_extend + self._gapB_matrix[i-1, j]]
+
+                # assign B[i,j] to max gap_in_B value
+                self._gapB_matrix[i,j] = max(gapY_max)
+                # save index of max value for backtracing
+                self._back_B[i,j] = np.argmax(gapY_max)
+        #
+        #        
+        # final note:
+        # we've kept track of the idx with the max score in each matrix cell via np.argmax
+        # we'll use to our advantage in the _backtrace method.
+        #
+        # -------------------------------------------------------------------------------Done.
 
         return self._backtrace()
 
     def _backtrace(self) -> Tuple[float, str, str]:
         """
-        # TODO Implement the traceback procedure method below
-        based on the heuristic you implement in the align method.
-        The traceback method should return a tuple of the alignment
-        score, the seqA alignment and the seqB alignment respectively.
+
+        This function performs the traceback path to 1) find the best alignment
+        score, and 2) find the alignment of seqA and seqB that matches the 
+        highest score.
+        The heuristic chooses Matching over gaps (high road).
+
+        Using backtracing matrices: _back, _back_A, and _back_B, the max score
+        is selected based on the np.argmax index value stored.
+        Visiting wither backtracing matrix will trace the path back to
+        [0,0]. 
+        This is further explained here:
+
+            if np.argmax == 0:
+                match, keep same letters in either seq.
+            
+            elif np.argmax == 1:
+                gap in A, insert gap '-' in seqA
+            
+            else: (np.argmax ==2):
+                gap in B, insert gap '-' in seqB
         """
+
         # Implement this method based upon the heuristic chosen in the align method above.
-        pass
+        lastRow = len(self._seqA)
+        lastCol = len(self._seqB)
+
+
+        # get best score (list score order, same as above)
+        final_scores= [self._align_matrix[lastRow, lastCol],
+                self._gapA_matrix[lastRow, lastCol], 
+                self._gapB_matrix[lastRow, lastCol]]
+
+        self.alignment_score = max(final_scores)
+
+        # idx of best score (match, gap in A, or gap in B)
+        max_idx = np.argmax(final_scores)
+
+        while lastRow !=0 and lastCol !=0:
+
+            # match was max score
+            if idx_best == 0:
+                self.seqA_align = self._seqA[lastRow - 1] + self.seqA_align
+                self.seqB_align = self._seqB[lastCol - 1] + self.seqB_align
+                # new best idx
+                max_idx = self._back[i, j]
+                # move diagonally (up to the left)
+                lastRow -= 1
+                lastCol -= 1
+
+            # gapA was max score
+            elif idx_best == 1:
+                self.seqA_align = "-" + self.seqA_align
+                self.seqB_align = self._seqB[lastCol - 1] + self.seqB_align
+                # new best idx
+                max_idx = self._back_A[lastRow, lastCol]
+                # move up
+                lastRow -= 1
+
+            # gapB was max score
+            else:
+                self.seqA_align = self._seqA[lastRow - 1] + self.seqA_align
+                self.seqB_align = "-" + self.seqB_align
+                # new best idx
+                max_idx = self._back_B[lastRow, lastCol]
+                # move left
+                lasCol -= 1
+
+        # return tuple of alignment score, seqA aligned, seqB aligned
+        return self.alignment_score, self.seqA_align, self.seqB_align
 
 
 def read_fasta(fasta_file: str) -> Tuple[str, str]:
