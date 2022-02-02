@@ -135,22 +135,17 @@ class NeedlemanWunsch:
         self._align_matrix[0,0] = 0 
 
 
-        # 2. Base case matrix X(gap_open)
-        self._gapA_matrix[0,0] = self.gap_open
-
-        # starts at 1, we've filled base case
+        # 2. Base case matrix A(gap_open)
         # fill all rows in first col now
-        for row in range(1, self._gapA_matrix.shape[0]):
-            self._gapA_matrix[row, 0] = self.gap_open + self.gap_extend * row
+        for row in range(len(seqA) + 1):
+            self._gapB_matrix[row, 0] = self.gap_open + self.gap_extend * row
 
 
-        # 3. Base case matrix Y(gap_extend)
-        # follows same base case at [0,0]
-        self._gapB_matrix[0,0] = self.gap_open
-
+        # 3. Base case matrix B(gap_extend)
         # fill first row, all cols now
-        for col in range(1, self._gapB_matrix.shape[1]):
-            self._gapB_matrix[0, col] = self.gap_open + self.gap_extend * row
+        for col in range(len(seqB) + 1):
+            self._gapA_matrix[0, col] = self.gap_open + self.gap_extend * col
+
         #---------------------------------------------------------------------------------Done.
 
         # -------------------------------- FILL A,B,M WITH DP --------------------------------
@@ -269,7 +264,7 @@ class NeedlemanWunsch:
                 # new best idx
                 max_idx = self._back_B[lastRow, lastCol]
                 # move left
-                lasCol -= 1
+                lastCol -= 1
 
         # return tuple of alignment score, seqA aligned, seqB aligned
         return self.alignment_score, self.seqA_align, self.seqB_align
